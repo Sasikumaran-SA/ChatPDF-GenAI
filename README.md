@@ -14,7 +14,7 @@ The user questions are processed using **gemini-2.0-flash model**, where the rel
 ---
 
 ## ☁️ Website link
-<ins>[https://chatpdf-genai-z9sddcsazzfxoocx56jtvq.streamlit.app](https://chatpdf-genai-z9sddcsazzfxoocx56jtvq.streamlit.app)</ins>
+[https://chatpdf-genai-z9sddcsazzfxoocx56jtvq.streamlit.app](https://chatpdf-genai-z9sddcsazzfxoocx56jtvq.streamlit.app)
 
 ---
 
