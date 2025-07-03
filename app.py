@@ -9,7 +9,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from qdrant_client import QdrantClient
 
-st.set_page_config(layout="wide", page_title="ChatPDF 🗣️ (Talk with your pdf)", initial_sidebar_state="expanded")
+st.set_page_config(layout="wide", page_title="ChatPDF 🗣️", initial_sidebar_state="expanded")
 st.markdown(
     """
 <style>
@@ -121,8 +121,11 @@ with st.sidebar:
     
     if st.session_state["connect"]:
         if st.button("Disconnect", use_container_width=True):
+            if st.session_state["file_path"]:
+                os.remove(st.session_state["file_path"])
             st.session_state["connect"] = False
             st.session_state["uploaded_file"] = None
+            st.session_state["file_mkr"] = False
             st.session_state["file_path"] = None
             st.session_state["file_processed"] = False
             st.session_state["vector_store"] = None
@@ -174,10 +177,6 @@ else:
 
     with col2:
         if not st.session_state["file_path"]:
-            st.session_state["file_processed"] = False
-            st.session_state["vector_store"] = None
-            st.session_state["rag_chain"] = None
-            st.session_state["messages"] = []
             st.markdown("<h3 style='margin-left: 20px;'>Now Upload a PDF file.</h3>", unsafe_allow_html=True)
         if st.session_state["file_path"] and not st.session_state["file_processed"]:
             st.markdown("<h5 style='margin-left: 20px;'>If you want to change the PDF file, please delete the current file and upload a new one.</h5>", unsafe_allow_html=True)
@@ -190,7 +189,7 @@ else:
                     st.session_state["file_processed"] = True
                     st.rerun()
                 except Exception as e:
-                    st.error()
+                    st.write("Error processing the PDF file. Please check the file format or API Configurations and try again.")
 
         if st.session_state["file_processed"]:
             st.write("\n")
@@ -205,13 +204,16 @@ else:
                 st.chat_message(message["role"]).markdown(f"<p style='text-align: right;'>{message["content"]}</p>", unsafe_allow_html=True)
             else:
                 st.chat_message(message["role"]).write(message["content"], unsafe_allow_html=True)
+        query = st.chat_input("Ask a question about your PDF file:")
         try:
-            query = st.chat_input("Ask a question about your PDF file:")
+            if query:
+                response = st.session_state["rag_chain"].invoke(query)
         except Exception as e:
-            st.error(e)
+            st.session_state["messages"].append({"role": "user", "content": query})
+            response = "Sorry something went wrong. We cannot process your query at the moment. Please try again"
+            st.session_state["messages"].append({"role": "ai", "content": response})
             st.rerun()
         if query:
-            response = st.session_state["rag_chain"].invoke(query)
             st.session_state["messages"].append({"role": "user", "content": query})
             st.session_state["messages"].append({"role": "ai", "content": response})
             st.rerun()
